@@ -69,7 +69,7 @@ const server = http.createServer((req, res) => {
   const nftMatch = pathname.match(/^\/api\/nft\/(\d+)$/);
   if (nftMatch) {
     const tokenId = nftMatch[1];
-    const osPath = `/api/v2/chain/robinhood/contract/0x4e4b6f6DB86f4aFaFC8e27e81F81A3E4B697B4E5/nfts/${tokenId}`;
+    const osPath = `/api/v2/chain/robinhood/contract/0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0/nfts/${tokenId}`;
     proxyToOpenSea(osPath, res);
     return;
   }
