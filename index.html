@@ -762,23 +762,11 @@ async function fetchNFT() {
   setLoading(true);
 
   try {
-    // First try by token_id via collection endpoint
-    const res = await fetch(`/api/collection?limit=1&token_ids=${tokenId}`);
+       // Fetch directly by contract + token ID
+    const res = await fetch(`/api/nft/${tokenId}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-
-    let nft = null;
-    if (data.nfts && data.nfts.length > 0) {
-      nft = data.nfts[0];
-    }
-
-    if (!nft) {
-      // Fallback: fetch by contract + token directly
-      const res2 = await fetch(`/api/nft/${tokenId}`);
-      if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
-      const data2 = await res2.json();
-      nft = data2.nft || null;
-    }
+    const nft = data.nft || null;
 
     if (!nft) {
       errEl.textContent = `> ERROR: TOKEN #${tokenId} NOT FOUND`;
