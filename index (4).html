@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STONKBROKERS // PFP TOOL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --black:   #0a0a0a;
+    --bg:      #111111;
+    --bg2:     #181818;
+    --bg3:     #1e1e1e;
+    --border:  #2a2a2a;
+    --green:   #00ff41;
+    --green2:  #00cc33;
+    --green3:  #004d14;
+    --amber:   #ffb700;
+    --red:     #ff2244;
+    --text:    #c8c8c8;
+    --muted:   #555555;
+    --white:   #ffffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── TICKER TAPE ── */
+  .ticker-wrap {
+    background: var(--black);
+    border-bottom: 1px solid var(--green3);
+    overflow: hidden;
+    height: 28px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker-label {
+    background: var(--green);
+    color: var(--black);
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    padding: 0 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+  }
+  .ticker-track {
+    display: flex;
+    animation: ticker 40s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-track span {
+    color: var(--green);
+    font-size: 12px;
+    padding: 0 28px;
+    letter-spacing: 1px;
+  }
+  .ticker-track span.up { color: var(--green); }
+  .ticker-track span.dn { color: var(--red); }
+  .ticker-track span.label { color: var(--muted); }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--black);
+    border-bottom: 2px solid var(--green3);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-logo {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-shadow: 0 0 12px rgba(0,255,65,0.4);
+    line-height: 1;
+  }
+  .header-logo span { color: var(--white); }
+  .header-right {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    letter-spacing: 1px;
+  }
+  .header-right .live {
+    color: var(--green);
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── TERMINAL PANEL ── */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .panel-bar {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .panel-bar .dot { width:8px; height:8px; border-radius:50%; }
+  .panel-bar .dot.g { background: var(--green); }
+  .panel-bar .dot.a { background: var(--amber); }
+  .panel-bar .dot.r { background: var(--red); }
+  .panel-bar .title { color: var(--green); margin-left: 8px; }
+  .panel-body { padding: 28px 32px; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .hero-title {
+    font-family: 'VT323', monospace;
+    font-size: clamp(42px, 8vw, 72px);
+    color: var(--green);
+    letter-spacing: 4px;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(0,255,65,0.3);
+    margin-bottom: 6px;
+  }
+  .hero-title span { color: var(--white); }
+  .hero-sub {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+  }
+  .hero-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  /* ── INPUT SECTION ── */
+  .input-section { margin-bottom: 32px; }
+  .field-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+  }
+  .input-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .token-input {
+    flex: 1;
+    background: var(--black);
+    border: 1px solid var(--green3);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 22px;
+    padding: 12px 18px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    letter-spacing: 3px;
+    border-radius: 2px;
+    min-width: 0;
+  }
+  .token-input::placeholder { color: var(--muted); font-size: 14px; letter-spacing: 2px; }
+  .token-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(0,255,65,0.12), inset 0 0 20px rgba(0,255,65,0.04);
+  }
+  .btn-execute {
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    letter-spacing: 2px;
+    padding: 0 28px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+  .btn-execute:hover {
+    background: #00ff66;
+    box-shadow: 0 0 16px rgba(0,255,65,0.35);
+  }
+  .btn-execute:active { background: var(--green2); }
+  .btn-execute:disabled { background: var(--muted); color: var(--bg); cursor: not-allowed; }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 12px;
+    margin-top: 10px;
+    letter-spacing: 1px;
+    min-height: 18px;
+  }
+
+  /* ── STATUS LINE ── */
+  .status-line {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .status-line .s-key { color: var(--muted); }
+  .status-line .s-val { color: var(--green); }
+  .status-line .sep { color: var(--border); }
+
+  /* ── NFT PREVIEW ── */
+  #nft-section { display: none; }
+  .nft-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 600px) {
+    .nft-preview-grid { grid-template-columns: 1fr; }
+  }
+
+  .preview-col { display: flex; flex-direction: column; gap: 16px; }
+  .preview-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #preview-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .nft-name {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+  .nft-meta {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    line-height: 1.8;
+  }
+  .nft-meta span { color: var(--text); }
+
+  .traits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .trait-chip {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  .trait-chip .t-type { color: var(--muted); display: block; letter-spacing: 1px; font-size: 10px; }
+  .trait-chip .t-val  { color: var(--green); letter-spacing: 1px; }
+
+  /* ── OVERLAY PICKER ── */
+  .overlay-section { margin-top: 0; }
+  .overlay-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .overlay-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .overlay-option {
+    aspect-ratio: 1;
+    background: var(--black);
+    border: 2px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .overlay-option:hover { border-color: var(--muted); }
+  .overlay-option.active { border-color: var(--green); box-shadow: 0 0 12px rgba(0,255,65,0.25); }
+  .overlay-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    image-rendering: pixelated;
+  }
+  .overlay-option .overlay-none-label {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .overlay-option .overlay-idx {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .overlay-option.active .overlay-idx { color: var(--green); }
+
+  .no-overlay-opt {
+    grid-column: 1 / -1;
+    aspect-ratio: auto;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .no-overlay-opt.active { border-color: var(--green); color: var(--green); }
+
+  /* ── DOWNLOAD ── */
+  .download-section { margin-top: 4px; }
+  .btn-download {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    letter-spacing: 3px;
+    padding: 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+    margin-bottom: 10px;
+  }
+  .btn-download:hover {
+    background: var(--green);
+    color: var(--black);
+    box-shadow: 0 0 20px rgba(0,255,65,0.3);
+  }
+  .btn-download:disabled {
+    border-color: var(--muted);
+    color: var(--muted);
+    cursor: not-allowed;
+    background: transparent;
+  }
+  .download-note {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  /* ── LOADING SPINNER ── */
+  .loading-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+    gap: 16px;
+  }
+  .loading-wrap.active { display: flex; }
+  .loading-bar {
+    width: 200px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .loading-bar-inner {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    animation: load 1.2s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(0,255,65,0.6);
+  }
+  @keyframes load {
+    0%   { width:0%; margin-left:0%; }
+    50%  { width:60%; margin-left:20%; }
+    100% { width:0%; margin-left:100%; }
+  }
+  .loading-text {
+    font-size: 13px;
+    color: var(--green);
+    letter-spacing: 3px;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 40px 0 20px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .footer a { color: var(--green); text-decoration: none; }
+
+  /* ── RESET LINK ── */
+  .reset-link {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    padding: 0;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+    text-decoration: underline;
+    text-decoration-color: var(--border);
+  }
+  .reset-link:hover { color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- TICKER TAPE -->
+<div class="ticker-wrap">
+  <div class="ticker-label">MKTFEED</div>
+  <div class="ticker-track" id="ticker">
+    <span class="label">STONKBROKERS</span>
+    <span class="up">$STONK +4.20%</span>
+    <span class="label"> · </span>
+    <span class="up">FLOOR 0.042 ETH ▲</span>
+    <span class="label"> · </span>
+    <span class="up">VOL 24H: 8.4 ETH</span>
+    <span class="label"> · </span>
+    <span class="dn">$PAPER -1.3%</span>
+    <span class="label"> · </span>
+    <span class="up">SUPPLY 4,444</span>
+    <span class="label"> · </span>
+    <span class="label">BUY THE DIP</span>
+    <span class="label"> · </span>
+    <span class="up">$HODL +69.0%</span>
+    <span class="label"> · </span>
+    <span class="dn">$BEARS -100%</span>
+    <span class="label"> · </span>
+    <!-- Duplicate for seamless loop -->
+    <span class="label">STONKBROKERS</span>
+    <span class="up">$STONK +4.20%</span>
+    <span class="label"> · </span>
+    <span class="up">FLOOR 0.042 ETH ▲</span>
+    <span class="label"> · </span>
+    <span class="up">VOL 24H: 8.4 ETH</span>
+    <span class="label"> · </span>
+    <span class="dn">$PAPER -1.3%</span>
+    <span class="label"> · </span>
+    <span class="up">SUPPLY 4,444</span>
+    <span class="label"> · </span>
+    <span class="label">BUY THE DIP</span>
+    <span class="label"> · </span>
+    <span class="up">$HODL +69.0%</span>
+    <span class="label"> · </span>
+    <span class="dn">$BEARS -100%</span>
+    <span class="label"> · </span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-logo">STONK<span>BROKERS</span></div>
+  <div class="header-right">
+    <span class="live"></span>LIVE · PFP GENERATOR<br>
+    TOKEN #1 — #4,444
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">// EQUITY TERMINAL v2.0 //</div>
+    <div class="hero-title"><span>PFP</span> BUILDER</div>
+    <div class="hero-sub">SELECT TOKEN · APPLY OVERLAY · DOWNLOAD</div>
+    <hr class="hero-divider" />
+  </div>
+
+  <!-- INPUT PANEL -->
+  <div class="panel" id="input-panel">
+    <div class="panel-bar">
+      <span class="dot g"></span><span class="dot a"></span><span class="dot r"></span>
+      <span class="title">TOKEN_LOOKUP.EXE</span>
+    </div>
+    <div class="panel-body">
+      <div class="input-section">
+        <label class="field-label" for="token-input">&gt; ENTER TOKEN ID (1 – 4444)</label>
+        <div class="input-row">
+          <input
+            type="number"
+            id="token-input"
+            class="token-input"
+            placeholder="e.g.  0042"
+            min="1"
+            max="4444"
+            autocomplete="off"
+            onkeydown="if(event.key==='Enter') fetchNFT()"
+          />
+          <button class="btn-execute" id="fetch-btn" onclick="fetchNFT()">EXECUTE</button>
+        </div>
+        <div class="error-msg" id="error-msg"></div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-wrap" id="loading">
+        <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+        <div class="loading-text">FETCHING DATA...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NFT RESULT SECTION -->
+  <div id="nft-section">
+    <button class="reset-link" onclick="resetTool()">← NEW LOOKUP</button>
+
+    <div class="status-line" id="status-line">
+      <span><span class="s-key">TOKEN</span> <span class="s-val" id="sl-token">—</span></span>
+      <span class="sep">|</span>
+      <span><span class="s-key">NAME</span> <span class="s-val" id="sl-name">—</span></span>
+      <span class="sep">|</span>
+      <span><span class="s-key">STATUS</span> <span class="s-val">LOADED</span></span>
+    </div>
+
+    <div class="nft-preview-grid">
+      <!-- LEFT: Canvas preview -->
+      <div class="preview-col">
+        <div class="preview-label">&gt; COMPOSITE PREVIEW</div>
+        <div class="canvas-wrap">
+          <canvas id="preview-canvas" width="800" height="800"></canvas>
+        </div>
+        <div class="download-section">
+          <button class="btn-download" id="dl-btn" onclick="downloadPFP()">⬇ DOWNLOAD JPG</button>
+          <div class="download-note">JPG · 800×800 · SHARE READY</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Info + overlay picker -->
+      <div class="preview-col">
+        <div class="preview-label">&gt; ASSET DETAILS</div>
+        <div class="nft-name" id="nft-name">STONKBROKER #—</div>
+        <div class="nft-meta" id="nft-meta"></div>
+        <div class="traits-grid" id="traits-grid"></div>
+
+        <hr class="hero-divider" style="margin-top:20px" />
+
+        <div class="overlay-section">
+          <span class="overlay-label">&gt; SELECT OVERLAY</span>
+          <div class="overlay-grid" id="overlay-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  STONKBROKERS // NOT FINANCIAL ADVICE // BUY HIGH SELL LOW //<br>
+  <a href="https://opensea.io/collection/stonkbrokers-434284142" target="_blank">VIEW ON OPENSEA</a>
+  &nbsp;·&nbsp;
+  <a href="https://stonkbrokers.io" target="_blank">STONKBROKERS.IO</a>
+</footer>
+
+<script>
+// ── OVERLAY CONFIG ──
+// Add your overlay filenames here. They must exist in the /overlays/ folder.
+// Format: { id: 'none' } for "no overlay", or { id: 1, label: 'BULL FRAME' } etc.
+const OVERLAYS = [
+  { id: 'none',  label: 'NONE' },
+  { id: 1,       label: 'HUMAN' },
+  { id: 2,       label: 'DEVIL' },
+  { id: 3,       label: 'ROBOT' },
+  { id: 4,       label: 'ZOMBIE' },
+  { id: 5,       label: 'LEMON' },
+  { id: 6,       label: 'ALIEN' },
+  { id: 7,       label: 'SHADOW' },
+  { id: 8,       label: 'MARSHMALLOW' },
+];
+
+// ── STATE ──
+let currentNFT = null;
+let currentNFTImage = null;
+let selectedOverlayId = 'none';
+let overlayImages = {};   // cache: id → Image
+
+const canvas = document.getElementById('preview-canvas');
+const ctx = canvas.getContext('2d');
+
+// ── OVERLAY GRID BUILD ──
+function buildOverlayGrid() {
+  const grid = document.getElementById('overlay-grid');
+  grid.innerHTML = '';
+  OVERLAYS.forEach(ov => {
+    const el = document.createElement('div');
+    el.className = 'overlay-option' + (ov.id === 'none' ? ' no-overlay-opt' : '');
+    el.dataset.id = ov.id;
+    el.onclick = () => selectOverlay(ov.id);
+
+    if (ov.id === 'none') {
+      el.innerHTML = `<span>○ ${ov.label}</span>`;
+    } else {
+      // Try to load overlay image
+      const img = document.createElement('img');
+      img.src = `/overlays/overlay-${ov.id}.png`;
+      img.alt = ov.label;
+      img.onerror = () => {
+        // Placeholder if image not found
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.flexDirection = 'column';
+        el.style.gap = '4px';
+        el.innerHTML = `
+          <span style="font-size:9px;letter-spacing:1px;color:var(--muted)">${ov.label}</span>
+          <span style="font-size:9px;color:var(--border)">COMING SOON</span>
+        `;
+      };
+      el.appendChild(img);
+      const idx = document.createElement('span');
+      idx.className = 'overlay-idx';
+      idx.textContent = String(ov.id).padStart(2, '0');
+      el.appendChild(idx);
+    }
+
+    if (ov.id === selectedOverlayId) el.classList.add('active');
+    grid.appendChild(el);
+  });
+}
+
+function selectOverlay(id) {
+  selectedOverlayId = id;
+  document.querySelectorAll('.overlay-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.id == id);
+  });
+  renderCanvas();
+}
+
+// ── FETCH NFT ──
+async function fetchNFT() {
+  const input = document.getElementById('token-input');
+  const errEl = document.getElementById('error-msg');
+  const fetchBtn = document.getElementById('fetch-btn');
+  const tokenRaw = input.value.trim();
+  const tokenId = parseInt(tokenRaw, 10);
+
+  errEl.textContent = '';
+
+  if (!tokenRaw || isNaN(tokenId) || tokenId < 1 || tokenId > 4444) {
+    errEl.textContent = '> ERROR: TOKEN MUST BE BETWEEN 1 AND 4444';
+    return;
+  }
+
+  fetchBtn.disabled = true;
+  setLoading(true);
+
+  try {
+    // First try by token_id via collection endpoint
+    const res = await fetch(`/api/collection?limit=1&token_ids=${tokenId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    let nft = null;
+    if (data.nfts && data.nfts.length > 0) {
+      nft = data.nfts[0];
+    }
+
+    if (!nft) {
+      // Fallback: fetch by contract + token directly
+      const res2 = await fetch(`/api/nft/${tokenId}`);
+      if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
+      const data2 = await res2.json();
+      nft = data2.nft || null;
+    }
+
+    if (!nft) {
+      errEl.textContent = `> ERROR: TOKEN #${tokenId} NOT FOUND`;
+      return;
+    }
+
+    currentNFT = nft;
+    await loadAndShowNFT(nft, tokenId);
+
+  } catch (e) {
+    errEl.textContent = `> ERROR: ${e.message}`;
+  } finally {
+    fetchBtn.disabled = false;
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  document.getElementById('loading').classList.toggle('active', on);
+}
+
+async function loadAndShowNFT(nft, tokenId) {
+  // Extract image URL
+  let imgUrl = nft.display_image_url || nft.image_url || nft.metadata?.image || '';
+
+  // Update info panel
+  const name = nft.name || `STONKBROKER #${tokenId}`;
+  document.getElementById('nft-name').textContent = name;
+  document.getElementById('sl-token').textContent = `#${tokenId}`;
+  document.getElementById('sl-name').textContent = name;
+
+  // Traits
+  const traits = nft.traits || [];
+  const traitsGrid = document.getElementById('traits-grid');
+  const metaEl = document.getElementById('nft-meta');
+  traitsGrid.innerHTML = '';
+  metaEl.innerHTML = `<span style="color:var(--muted)">COLLECTION</span> <span>STONKBROKERS</span><br>
+    <span style="color:var(--muted)">TOKEN ID</span> <span>#${tokenId}</span>`;
+
+  traits.slice(0, 10).forEach(t => {
+    const chip = document.createElement('div');
+    chip.className = 'trait-chip';
+    chip.innerHTML = `<span class="t-type">${t.trait_type || ''}</span><span class="t-val">${t.value || ''}</span>`;
+    traitsGrid.appendChild(chip);
+  });
+
+  // Show the NFT section
+  document.getElementById('input-panel').style.display = 'none';
+  document.getElementById('nft-section').style.display = 'block';
+
+  buildOverlayGrid();
+
+  // Load NFT image
+  currentNFTImage = null;
+  if (imgUrl) {
+    try {
+      currentNFTImage = await loadImage(imgUrl);
+    } catch (e) {
+      console.warn('Image load failed:', e);
+    }
+  }
+
+  renderCanvas();
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// ── CANVAS RENDER ──
+async function renderCanvas() {
+  ctx.clearRect(0, 0, 800, 800);
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, 800, 800);
+
+  // Draw NFT base image
+  if (currentNFTImage) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(currentNFTImage, 0, 0, 800, 800);
+  } else {
+    // Placeholder grid
+    ctx.fillStyle = '#181818';
+    ctx.fillRect(0, 0, 800, 800);
+    ctx.fillStyle = '#00ff41';
+    ctx.font = '300 28px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('IMAGE UNAVAILABLE', 400, 380);
+    ctx.fillStyle = '#333';
+    ctx.font = '16px "Share Tech Mono", monospace';
+    ctx.fillText('CHECK OPENSEA FOR ASSET', 400, 420);
+  }
+
+  // Draw overlay
+  if (selectedOverlayId !== 'none') {
+    const overlayImg = await getOverlayImage(selectedOverlayId);
+    if (overlayImg) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(overlayImg, 0, 0, 800, 800);
+    }
+  }
+}
+
+async function getOverlayImage(id) {
+  if (overlayImages[id]) return overlayImages[id];
+  try {
+    const img = await loadImage(`/overlays/overlay-${id}.png`);
+    overlayImages[id] = img;
+    return img;
+  } catch {
+    return null;
+  }
+}
+
+// ── DOWNLOAD ──
+function downloadPFP() {
+  const nftName = currentNFT ? (currentNFT.name || 'stonkbroker') : 'stonkbroker';
+  const safeName = nftName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  const overlayTag = selectedOverlayId === 'none' ? '' : `-overlay${selectedOverlayId}`;
+  const filename = `${safeName}${overlayTag}.jpg`;
+
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/jpeg', 0.95);
+  link.click();
+}
+
+// ── RESET ──
+function resetTool() {
+  currentNFT = null;
+  currentNFTImage = null;
+  selectedOverlayId = 'none';
+  document.getElementById('token-input').value = '';
+  document.getElementById('error-msg').textContent = '';
+  document.getElementById('nft-section').style.display = 'none';
+  document.getElementById('input-panel').style.display = 'block';
+  ctx.clearRect(0, 0, 800, 800);
+}
+
+// ── INIT ──
+buildOverlayGrid();
+</script>
+</body>
+</html>
